@@ -26,18 +26,25 @@ def fix_json_quotes(json_str: str) -> str:
     """
     Исправляет невалидный JSON, добавляя кавычки к незакавыченным значениям
     """
+    print(f"[DEBUG] Original JSON: {json_str}")
+
     # Паттерн для поиска "value": незакавыченное_значение
-    # Ищем "value": (пробелы) и затем что-то без кавычек до запятой/скобки/конца
-    pattern = r'"value"\s*:\s*([^",\[\]{}][^,\]\}]*)'
+    # Ловим все между : и следующим } или ,
+    pattern = r'"value"\s*:\s*([^"\{\}\[\],][^,\}\]]*?)(?=\s*[,\}\]])'
 
     def add_quotes(match):
         value = match.group(1).strip()
+        print(f"[DEBUG] Found value without quotes: '{value}'")
+
         # Если значение уже не является числом, null, true, false - добавляем кавычки
         if value not in ['null', 'true', 'false'] and not value.replace('.', '').replace('-', '').isdigit():
-            return f'"value": "{value}"'
+            fixed = f'"value": "{value}"'
+            print(f"[DEBUG] Fixed to: {fixed}")
+            return fixed
         return match.group(0)
 
     fixed_json = re.sub(pattern, add_quotes, json_str)
+    print(f"[DEBUG] Fixed JSON: {fixed_json}")
     return fixed_json
 
 
