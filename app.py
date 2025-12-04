@@ -1,9 +1,19 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional, Any
 import uvicorn
 
 app = FastAPI(title="INSS API Service", version="1.0.0")
+
+# Настройка CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Разрешаем все домены
+    allow_credentials=True,
+    allow_methods=["*"],  # Разрешаем все методы (GET, POST, PUT, DELETE и т.д.)
+    allow_headers=["*"],  # Разрешаем все заголовки
+)
 
 
 class FieldType(BaseModel):
@@ -27,10 +37,9 @@ async def root():
     return {"status": "ok", "message": "INSS API Service is running"}
 
 
-@app.post("/api/task")
-async def create_task(tasks: List[TaskRequest]):
+async def process_tasks(tasks: List[TaskRequest]):
     """
-    Принимает массив задач и извлекает organization_employee из поля value
+    Обрабатывает массив задач и извлекает organization_employee из поля value
     """
     try:
         processed_tasks = []
@@ -58,6 +67,22 @@ async def create_task(tasks: List[TaskRequest]):
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/task")
+async def create_task_post(tasks: List[TaskRequest]):
+    """
+    POST метод для создания задач
+    """
+    return await process_tasks(tasks)
+
+
+@app.put("/api/task")
+async def create_task_put(tasks: List[TaskRequest]):
+    """
+    PUT метод для создания задач
+    """
+    return await process_tasks(tasks)
 
 
 @app.get("/health")
