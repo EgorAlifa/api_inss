@@ -52,15 +52,20 @@ async def parse_request_body(request: Request) -> Any:
     """
     Парсит тело запроса, исправляя невалидный JSON при необходимости
     """
+    # Сначала получаем raw body для логирования
+    body = await request.body()
+    json_str = body.decode('utf-8')
+    print(f"[DEBUG] Raw request body: {json_str}")
+
     try:
         # Пытаемся распарсить как обычный JSON
-        return await request.json()
-    except Exception:
-        # Если не получилось, получаем raw body и чиним JSON
-        body = await request.body()
-        json_str = body.decode('utf-8')
-
-        # Исправляем JSON
+        data = json.loads(json_str)
+        print(f"[DEBUG] JSON parsed successfully (no fix needed)")
+        print(f"[DEBUG] Parsed data: {data}")
+        return data
+    except Exception as e:
+        print(f"[DEBUG] JSON parsing failed: {e}")
+        # Если не получилось, чиним JSON
         fixed_json = fix_json_quotes(json_str)
 
         # Парсим исправленный JSON
