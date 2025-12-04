@@ -2,7 +2,7 @@
 
 Простой API сервис для обработки задач INSS.
 
-## Быстрый старт
+## Быстрый старт (Docker - рекомендуется)
 
 ### 1. Клонирование или обновление репозитория
 
@@ -10,13 +10,35 @@
 git pull
 ```
 
-### 2. Запуск сервиса
+### 2. Запуск сервиса в Docker (фоновый режим)
+
+```bash
+./docker-start.sh
+```
+
+Сервис запустится в фоне на порту **9696**.
+
+### Управление Docker контейнером
+
+```bash
+# Просмотр логов
+docker-compose logs -f
+
+# Статус контейнера
+docker-compose ps
+
+# Остановка сервиса
+docker-compose down
+
+# Перезапуск сервиса
+docker-compose restart
+```
+
+## Альтернативный запуск (без Docker)
 
 ```bash
 ./start.sh
 ```
-
-Сервис запустится на порту **9696**.
 
 ## API Endpoints
 
@@ -86,6 +108,11 @@ Health check endpoint.
 
 ## Требования
 
+### Для Docker (рекомендуется)
+- Docker
+- Docker Compose
+
+### Для запуска без Docker
 - Python 3.7+
 - pip
 
@@ -113,7 +140,10 @@ python app.py
 .
 ├── app.py              # Основной файл приложения
 ├── requirements.txt    # Зависимости Python
-├── start.sh           # Скрипт для быстрого запуска
+├── Dockerfile          # Docker образ
+├── docker-compose.yml  # Docker Compose конфигурация
+├── docker-start.sh     # Скрипт для запуска в Docker
+├── start.sh           # Скрипт для запуска без Docker
 └── README.md          # Документация
 ```
 

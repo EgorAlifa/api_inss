@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  inss-api:
+    build: .
+    container_name: inss-api-service
+    ports:
+      - "9696:9696"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9696/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
