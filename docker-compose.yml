@@ -4,8 +4,6 @@ services:
   inss-api:
     build: .
     container_name: inss-api-service
-    ports:
-      - "9696:9696"  # Доступен извне для проксирования с другого сервера
     restart: unless-stopped
     environment:
       - PYTHONUNBUFFERED=1
@@ -15,3 +13,23 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - inss-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: inss-nginx
+    ports:
+      - "9696:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - inss-api
+    restart: unless-stopped
+    networks:
+      - inss-network
+
+networks:
+  inss-network:
+    driver: bridge
