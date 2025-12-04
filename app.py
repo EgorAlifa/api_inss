@@ -2,6 +2,8 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Any
 import uvicorn
+import json
+import re
 
 app = FastAPI(title="INSS API Service", version="1.0.0")
 
@@ -18,6 +20,44 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"status": "ok", "message": "INSS API Service is running"}
+
+
+def fix_json_quotes(json_str: str) -> str:
+    """
+    Исправляет невалидный JSON, добавляя кавычки к незакавыченным значениям
+    """
+    # Паттерн для поиска "value": незакавыченное_значение
+    # Ищем "value": (пробелы) и затем что-то без кавычек до запятой/скобки/конца
+    pattern = r'"value"\s*:\s*([^",\[\]{}][^,\]\}]*)'
+
+    def add_quotes(match):
+        value = match.group(1).strip()
+        # Если значение уже не является числом, null, true, false - добавляем кавычки
+        if value not in ['null', 'true', 'false'] and not value.replace('.', '').replace('-', '').isdigit():
+            return f'"value": "{value}"'
+        return match.group(0)
+
+    fixed_json = re.sub(pattern, add_quotes, json_str)
+    return fixed_json
+
+
+async def parse_request_body(request: Request) -> Any:
+    """
+    Парсит тело запроса, исправляя невалидный JSON при необходимости
+    """
+    try:
+        # Пытаемся распарсить как обычный JSON
+        return await request.json()
+    except Exception:
+        # Если не получилось, получаем raw body и чиним JSON
+        body = await request.body()
+        json_str = body.decode('utf-8')
+
+        # Исправляем JSON
+        fixed_json = fix_json_quotes(json_str)
+
+        # Парсим исправленный JSON
+        return json.loads(fixed_json)
 
 
 async def process_tasks(data: Any):
@@ -66,18 +106,18 @@ async def process_tasks(data: Any):
 @app.post("/api/task")
 async def create_task_post(request: Request):
     """
-    POST метод для создания задач - принимает любой JSON
+    POST метод для создания задач - автоматически исправляет невалидный JSON
     """
-    data = await request.json()
+    data = await parse_request_body(request)
     return await process_tasks(data)
 
 
 @app.put("/api/task")
 async def create_task_put(request: Request):
     """
-    PUT метод для создания задач - принимает любой JSON
+    PUT метод для создания задач - автоматически исправляет невалидный JSON
     """
-    data = await request.json()
+    data = await parse_request_body(request)
     return await process_tasks(data)
 
 
