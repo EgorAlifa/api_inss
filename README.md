@@ -16,7 +16,18 @@ git pull
 ./docker-start.sh
 ```
 
-Сервис запустится в фоне на порту **9696**.
+Сервис запустится в фоне на порту **9696** (доступен только локально на 127.0.0.1).
+
+### 3. Настройка HTTPS через nginx (обязательно для работы с dev.goodt.me)
+
+Для работы с HTTPS сайтами нужно добавить location в существующий nginx конфиг:
+
+1. Откройте конфиг nginx для `dev.goodt.me` (обычно в `/etc/nginx/sites-available/`)
+2. Добавьте в блок `server` содержимое файла `nginx-location.conf`
+3. Проверьте конфигурацию: `sudo nginx -t`
+4. Перезагрузите nginx: `sudo systemctl reload nginx`
+
+После этого API будет доступен по адресу: `https://dev.goodt.me/api/inss/api/task`
 
 ### Управление Docker контейнером
 
@@ -138,18 +149,23 @@ python app.py
 
 ```
 .
-├── app.py              # Основной файл приложения
-├── requirements.txt    # Зависимости Python
-├── Dockerfile          # Docker образ
-├── docker-compose.yml  # Docker Compose конфигурация
-├── docker-start.sh     # Скрипт для запуска в Docker
-├── start.sh           # Скрипт для запуска без Docker
-└── README.md          # Документация
+├── app.py                  # Основной файл приложения
+├── requirements.txt        # Зависимости Python
+├── Dockerfile              # Docker образ
+├── docker-compose.yml      # Docker Compose конфигурация
+├── docker-start.sh         # Скрипт для запуска в Docker
+├── start.sh               # Скрипт для запуска без Docker
+├── nginx.conf             # Nginx конфигурация (standalone)
+├── nginx-location.conf    # Nginx location для существующего сервера
+├── generate-ssl.sh        # Скрипт генерации SSL сертификата
+└── README.md              # Документация
 ```
 
 ## Использование с виджетом API в Insight
 
-1. Убедитесь, что сервис запущен на порту 9696
-2. В виджете API используйте POST запрос на `http://your-server:9696/api/task`
+1. Убедитесь, что сервис запущен и настроен nginx
+2. В виджете API используйте **PUT** или **POST** запрос на `https://dev.goodt.me/api/inss/api/task`
 3. Передайте в теле запроса JSON с `organization_employee` и другими полями
 4. Сервис вернет 200 OK с обработанными данными
+
+**Важно:** Используйте HTTPS, а не HTTP, чтобы избежать блокировки Mixed Content в браузере.

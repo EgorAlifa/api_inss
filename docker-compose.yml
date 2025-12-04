@@ -5,7 +5,7 @@ services:
     build: .
     container_name: inss-api-service
     ports:
-      - "9696:9696"
+      - "127.0.0.1:9696:9696"  # Доступен только локально для nginx на хосте
     restart: unless-stopped
     environment:
       - PYTHONUNBUFFERED=1
