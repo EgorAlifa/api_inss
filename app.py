@@ -1,7 +1,6 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List, Optional, Any
+from typing import Any
 import uvicorn
 
 app = FastAPI(title="INSS API Service", version="1.0.0")
@@ -16,47 +15,42 @@ app.add_middleware(
 )
 
 
-class FieldType(BaseModel):
-    id: int
-
-
-class Field(BaseModel):
-    type: FieldType
-    value: Any
-
-
-class TaskRequest(BaseModel):
-    parent: Optional[Any] = None
-    fields: List[Field]
-    comment: str
-    id: Any
-
-
 @app.get("/")
 async def root():
     return {"status": "ok", "message": "INSS API Service is running"}
 
 
-async def process_tasks(tasks: List[TaskRequest]):
+async def process_tasks(data: Any):
     """
     Обрабатывает массив задач и извлекает organization_employee из поля value
+    Принимает любые данные без строгой валидации
     """
     try:
         processed_tasks = []
 
-        for task in tasks:
+        # Проверяем что data это список
+        if not isinstance(data, list):
+            data = [data]
+
+        for task in data:
             # Извлекаем organization_employee из fields
             organization_employee = None
-            for field in task.fields:
-                if field.type.id == 9956:
-                    organization_employee = field.value
-                    break
+
+            if isinstance(task, dict) and "fields" in task:
+                fields = task.get("fields", [])
+                if isinstance(fields, list):
+                    for field in fields:
+                        if isinstance(field, dict):
+                            field_type = field.get("type", {})
+                            if isinstance(field_type, dict) and field_type.get("id") == 9956:
+                                organization_employee = field.get("value")
+                                break
 
             processed_tasks.append({
-                "task_id": task.id,
+                "task_id": task.get("id") if isinstance(task, dict) else None,
                 "organization_employee": organization_employee,
-                "comment": task.comment,
-                "parent": task.parent
+                "comment": task.get("comment") if isinstance(task, dict) else None,
+                "parent": task.get("parent") if isinstance(task, dict) else None
             })
 
         return {
@@ -70,19 +64,21 @@ async def process_tasks(tasks: List[TaskRequest]):
 
 
 @app.post("/api/task")
-async def create_task_post(tasks: List[TaskRequest]):
+async def create_task_post(request: Request):
     """
-    POST метод для создания задач
+    POST метод для создания задач - принимает любой JSON
     """
-    return await process_tasks(tasks)
+    data = await request.json()
+    return await process_tasks(data)
 
 
 @app.put("/api/task")
-async def create_task_put(tasks: List[TaskRequest]):
+async def create_task_put(request: Request):
     """
-    PUT метод для создания задач
+    PUT метод для создания задач - принимает любой JSON
     """
-    return await process_tasks(tasks)
+    data = await request.json()
+    return await process_tasks(data)
 
 
 @app.get("/health")

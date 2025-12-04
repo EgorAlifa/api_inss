@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Generating self-signed SSL certificate for dev.goodt.me..."
+echo "Generating self-signed SSL certificate for 37.252.23.30..."
 
 # Создаем директорию для SSL сертификатов
 mkdir -p ssl
@@ -19,9 +19,9 @@ x509_extensions = v3_ca
 C=RU
 ST=Moscow
 L=Moscow
-O=GoodT
+O=INSS
 OU=IT Department
-CN=dev.goodt.me
+CN=37.252.23.30
 
 [req_ext]
 subjectAltName = @alt_names
@@ -33,9 +33,8 @@ keyUsage = digitalSignature, keyEncipherment
 extendedKeyUsage = serverAuth
 
 [alt_names]
-DNS.1 = dev.goodt.me
-DNS.2 = *.dev.goodt.me
 IP.1 = 37.252.23.30
+DNS.1 = 37.252.23.30
 EOF
 
 # Генерируем самоподписанный сертификат с SAN (398 дней - максимум для Chrome)
@@ -51,9 +50,11 @@ echo ""
 echo "✅ SSL certificate generated successfully!"
 echo ""
 echo "Certificate details:"
-echo "  Domain: dev.goodt.me"
 echo "  IP: 37.252.23.30"
 echo "  Valid for: 398 days"
 echo "  Files:"
 echo "    - ssl/cert.pem"
 echo "    - ssl/key.pem"
+echo ""
+echo "⚠️  ВАЖНО: Самоподписанный сертификат для IP не будет доверенным!"
+echo "    Нужно один раз принять его в браузере."

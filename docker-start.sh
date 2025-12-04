@@ -21,12 +21,12 @@ sleep 3
 docker-compose ps
 
 echo ""
-echo "Service is running on https://dev.goodt.me:9696"
+echo "Service is running on https://37.252.23.30:9696"
 echo ""
-echo "⚠️  ВАЖНО: Первый раз откройте https://dev.goodt.me:9696 в браузере"
+echo "⚠️  ВАЖНО: Первый раз откройте https://37.252.23.30:9696 в браузере"
 echo "    и примите самоподписанный сертификат (нажмите 'Продолжить')"
 echo ""
-echo "Сертификат выдан для: dev.goodt.me (работает с IP 37.252.23.30:9696)"
+echo "API теперь принимает любые данные без строгой валидации!"
 echo ""
 echo "Useful commands:"
 echo "  docker-compose logs -f        # Просмотр логов"
